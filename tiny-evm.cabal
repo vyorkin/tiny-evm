@@ -1,0 +1,119 @@
+cabal-version:       2.4
+name:                tiny-evm
+version:             0.1.0.0
+synopsis:            A tiny ethereum-like virtual machine
+license:             MIT
+license-file:        LICENSE
+author:              Vasiliy Yorkin
+maintainer:          vasiliy.yorkin@gmail.com
+copyright:           2019 (c) Vasiliy Yorkin aka vyorkin
+category:            Language
+build-type:          Simple
+extra-source-files:  CHANGELOG.md
+
+common main
+  build-depends:       base
+                     , relude ^>= 0.4
+                     , co-log ^>= 0.2
+                     , text ^>= 1.2
+                     , bytestring ^>= 0.10
+                     , base16-bytestring ^>= 0.1
+                     , errors ^>= 2.3
+                     , containers ^>= 0.6
+                     , aeson ^>= 1.4
+                     , mtl ^>= 2.2
+                     , mmorph ^>= 1.1
+                     , lens ^>= 4.17
+  default-language:    Haskell2010
+  default-extensions:  OverloadedStrings
+
+common exe
+  import:              main
+  ghc-options:         -Wall
+                       -threaded
+                       -rtsopts
+                       -with-rtsopts=-N
+                       -Wincomplete-uni-patterns
+                       -Wincomplete-record-updates
+                       -Wcompat
+                       -Widentities
+                       -Wredundant-constraints
+                       -fhide-source-paths
+                       -Wmissing-export-lists
+                       -Wpartial-fields
+
+library
+  import:              main
+  ghc-options:         -Wall
+                       -Wincomplete-uni-patterns
+                       -Wincomplete-record-updates
+                       -Wcompat
+                       -Widentities
+                       -Wredundant-constraints
+                       -fhide-source-paths
+                       -Wmissing-export-lists
+                       -Wpartial-fields
+  mixins:              base hiding (Prelude)
+                     , relude (Relude as Prelude)
+  exposed-modules:     TinyEVM
+                     , TinyEVM.Env
+                     , TinyEVM.VM
+                     , TinyEVM.VM.Program
+                     , TinyEVM.VM.State
+                     , TinyEVM.VM.Stack
+                     , TinyEVM.VM.Memory
+                     , TinyEVM.VM.Code
+                     , TinyEVM.VM.Storage
+                     , TinyEVM.VM.Instruction
+                     , TinyEVM.VM.Instruction.Operation
+                     , TinyEVM.VM.Instruction.Opcode
+                     , TinyEVM.VM.Instruction.Metadata
+                     , TinyEVM.VM.Gas
+                     , TinyEVM.VM.Gas.CostGroup
+  other-modules:       Paths_tiny_evm
+  hs-source-dirs:      src
+
+executable tiny-evm
+  import:              exe
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  build-depends:       tiny-evm
+
+test-suite tiny-evm-test
+  import:              main
+  ghc-options:         -Wall
+                       -threaded
+                       -rtsopts
+                       -with-rtsopts=-N
+                       -Wincomplete-uni-patterns
+                       -Wincomplete-record-updates
+                       -Wcompat
+                       -Widentities
+                       -Wredundant-constraints
+                       -fhide-source-paths
+                       -Wmissing-export-lists
+                       -Wpartial-fields
+                       -Wmissing-home-modules
+                       -- Our test convention for HUnit would make it
+                       -- unnecessarily verbose to add the signature of each test
+                       -fno-warn-missing-signatures
+                       -- Delegate to Tasty to discover tests
+                       -fno-warn-missing-export-lists
+  type:                exitcode-stdio-1.0
+  mixins:              base hiding (Prelude)
+                     , relude (Relude as Prelude)
+  build-depends:       tiny-evm
+                     , QuickCheck
+                     , generic-random
+                     , hspec
+                     , tasty
+                     , tasty-hspec
+                     , doctest
+  build-tool-depends:  hspec-discover:hspec-discover == 2.*
+  other-modules:       VM.StackSpec
+                     , VM.InstructionSpec
+                     , VM.Instruction.OpcodeSpec
+                     , VM.Instruction.OperationSpec
+                     , VM.CodeSpec
+  hs-source-dirs:      test
+  main-is:             Spec.hs

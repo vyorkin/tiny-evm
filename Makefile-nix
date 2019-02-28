@@ -1,0 +1,12 @@
+build:
+	nix-build release.nix
+repl:
+	nix-shell --attr env release.nix --run 'cabal repl all'
+test:
+	nix-shell --attr env release.nix --run 'cabal test all'
+clean:
+	nix-shell --attr env release.nix --run 'cabal clean'
+cabal2nix:
+	cabal2nix . > project.nix
+
+.PHONY: build repl test clean cabal2nix
