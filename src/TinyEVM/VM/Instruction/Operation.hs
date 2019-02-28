@@ -8,12 +8,14 @@ module TinyEVM.VM.Instruction.Operation
   , encode
   , decode
   , metadata
+  , arity
   ) where
 
 import TinyEVM.VM.Instruction.Metadata (Metadata, (|>))
 import TinyEVM.VM.Instruction.Opcode (InvalidOpcode (..), Opcode)
 import qualified TinyEVM.VM.Instruction.Opcode as Opcode
 
+-- | Represents a TinyEVM operation.
 data Operation
   = Stop
   | Add
@@ -95,3 +97,8 @@ decode = \case
   0x55 -> Right SStore
   b | Opcode.isPush b -> Right $ Push $ Opcode.arity b
   b -> Left $ InvalidOpcode b
+
+-- | Returns the operation arity.
+arity :: Operation -> Int
+arity (Push n) = n
+arity _        = 0

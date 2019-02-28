@@ -14,7 +14,7 @@ import TinyEVM.VM.Instruction (Instruction, InvalidOpcode)
 import qualified TinyEVM.VM.Instruction as Instruction
 
 -- | Code is just a list of instructions.
-newtype Code = Code [Instruction]
+newtype Code = Code { unCode :: [Instruction] }
   deriving (Eq, Show)
 
 instance FromJSON Code where
@@ -24,15 +24,15 @@ instance FromJSON Code where
       parse s = either (fail . show) return (decode $ toBytes s)
 
       toBytes :: Text -> [Word8]
-      toBytes = reverse . ByteString.unpack . encodeUtf8
+      toBytes = ByteString.unpack . encodeUtf8
 
 -- | Encodes a sequence of VM instructions.
 encode :: Code -> [Word8]
-encode (Code is) = concatMap Instruction.encode is
+encode = concatMap Instruction.encode . unCode
 
--- | Decodes a VM bytecode as a sequence of VM instructions.
+-- | Decodes a VM bytecode into sequence of instructions.
 decode :: [Word8] -> Either InvalidOpcode Code
-decode = fmap Code . go []
+decode bytecode = Code . reverse <$> go [] bytecode
   where
     go :: [Instruction] -> [Word8] -> Either InvalidOpcode [Instruction]
     go acc [] = Right acc

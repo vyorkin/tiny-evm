@@ -6,18 +6,19 @@ import Test.Hspec
 import Test.QuickCheck
 
 import TinyEVM.VM.Code (Code (..), decode, encode)
-import VM.InstructionSpec (ValidChunk (..))
+import TinyEVM.VM.Instruction (Instruction, add, opcode, operands, push)
+import qualified TinyEVM.VM.Instruction as Instruction
+import VM.InstructionSpec ()
 
-data ValidBytecode = ValidBytecode [Word8]
-  deriving (Eq, Show)
-
-instance Arbitrary ValidBytecode where
-  arbitrary = ValidBytecode . toBytecode <$> arbitrary
-    where
-      toBytecode (ValidChunk opcode _ args) = opcode:args
+instance Arbitrary Code where
+  arbitrary = Code <$> arbitrary
 
 spec :: Spec
 spec = describe "Code" $ do
   context "given a valid bytecode" $ do
-    it "roundtrips code" $ property $ \(ValidBytecode bs) ->
-      (encode <$> decode bs) === Right bs
+    it "roundtrips code" $ property $ \code ->
+      (decode . encode) code === Right code
+
+    it "decodes correctly" $ do
+      let code = Code [push 1 [5], push 1 [4], add]
+      decode [96, 5, 96, 4, 1] === Right code

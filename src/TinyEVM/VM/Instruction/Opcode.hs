@@ -33,6 +33,7 @@ push32 = push1 + 31
 isPush :: Opcode -> Bool
 isPush x = x >= push1 && x <= push32
 
+-- | Returns the opcode arity.
 arity :: Opcode -> Int
 arity op
   | isPush op = fromIntegral (op - push1) + 1
