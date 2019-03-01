@@ -20,6 +20,8 @@ common main
                      , base16-bytestring ^>= 0.1
                      , errors ^>= 2.3
                      , containers ^>= 0.6
+                     , unordered-containers >= 0.2
+                     , vector ^>= 0.12
                      , aeson ^>= 1.4
                      , mtl ^>= 2.2
                      , mmorph ^>= 1.1
@@ -70,6 +72,7 @@ library
                      , TinyEVM.VM.Instruction.Metadata
                      , TinyEVM.VM.Gas
                      , TinyEVM.VM.Gas.CostGroup
+                     , Data.ByteString.Base16.Extra
   other-modules:       Paths_tiny_evm
   hs-source-dirs:      src
 

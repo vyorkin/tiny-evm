@@ -4,11 +4,12 @@ module TinyEVM.VM.Code
     -- * Operations
   , encode
   , decode
+    -- * Utils
   ) where
 
 import Data.Aeson (FromJSON, parseJSON, withText)
 import Data.Aeson.Types (Parser)
-import qualified Data.ByteString as ByteString
+import qualified Data.ByteString.Base16.Extra as Base16
 
 import TinyEVM.VM.Instruction (Instruction, InvalidOpcode)
 import qualified TinyEVM.VM.Instruction as Instruction
@@ -18,19 +19,18 @@ newtype Code = Code { unCode :: [Instruction] }
   deriving (Eq, Show)
 
 instance FromJSON Code where
-  parseJSON = withText "Text" parse
+  parseJSON = withText "code" parse
     where
       parse :: Text -> Parser Code
-      parse s = either (fail . show) return (decode $ toBytes s)
-
-      toBytes :: Text -> [Word8]
-      toBytes = ByteString.unpack . encodeUtf8
+      parse s =
+        let code = decode (Base16.decodeBytes s)
+        in either (fail . show) return code
 
 -- | Encodes a sequence of VM instructions.
 encode :: Code -> [Word8]
 encode = concatMap Instruction.encode . unCode
 
--- | Decodes a VM bytecode into sequence of instructions.
+-- | Decodes the given bytecode into a sequence of instructions.
 decode :: [Word8] -> Either InvalidOpcode Code
 decode bytecode = Code . reverse <$> go [] bytecode
   where

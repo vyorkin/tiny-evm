@@ -88,6 +88,11 @@ mkInstr op args = Instruction
 mkInstrN :: Operation -> Instruction
 mkInstrN = flip mkInstr []
 
+push :: Int -> [Word8] -> Instruction
+push n = mkInstr (Push n)
+
+-- TODO: use TH, possibly
+
 add, mul, sub, div, sdiv, mod, smod, addMod, mulMod,
   signExtend, pop, mload, mstore, sload, sstore :: Instruction
 
@@ -106,6 +111,3 @@ mload = mkInstrN MLoad
 mstore = mkInstrN MStore
 sload = mkInstrN SLoad
 sstore = mkInstrN SStore
-
-push :: Int -> [Word8] -> Instruction
-push n = mkInstr (Push n)

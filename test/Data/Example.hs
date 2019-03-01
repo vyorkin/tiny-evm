@@ -19,3 +19,5 @@ makeLenses ''Example
 
 -- >>> decode "{\"foo\":1,\"bar\":2}" :: Maybe (Map String Int)
 -- Just (fromList [("bar",2),("foo",1)])
+
+-- Aeson.eitherDecode "\"0x60026002600108600055\"" :: Either String Code

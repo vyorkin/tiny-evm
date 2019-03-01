@@ -37,7 +37,7 @@ data State = State
   , _stack   :: !Stack
   , _memory  :: !Memory
   , _storage :: !Storage
-  }
+  } deriving (Show)
 
 makeLenses ''State
 
