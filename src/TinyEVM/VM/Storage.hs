@@ -1,40 +1,63 @@
+{-# LANGUAGE LambdaCase #-}
+
 module TinyEVM.VM.Storage
   ( -- * The @Storage@ type
     Storage(..)
-  , parseByteValue
+  , Address
+  , Value
+    -- * Opreations
+  , get
+  , put
   ) where
 
-import Prelude hiding (empty)
+import Prelude hiding (empty, get, put)
 
-import Data.Aeson (FromJSON, Value, parseJSON, withObject, withText)
+import Data.Aeson (FromJSON, parseJSON, withObject, withText)
+import qualified Data.Aeson as Aeson (Value (..))
 import Data.Aeson.Types (Object, Parser)
+import qualified Data.ByteString.Base16.Extra as Base16
 import Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as HashMap
-
-import qualified Data.ByteString.Base16.Extra as Base16
 
 -- In the real EVM we have a storage per contract account.
 -- But for our TinyEVM (to keep things simple) we'll have a
 -- storage per program, which is just an abstraction over `HashMap`.
 
+type Address = Word8
+
+type Value = Word8
+
 -- | Represents a VM storage.
 newtype Storage = Storage
-  { unStorage :: HashMap Word8 Word8
+  { unStorage :: HashMap Address Value
   } deriving (Eq, Show)
 
 instance FromJSON Storage where
   parseJSON = withObject "storage" parseStorage
 
-parseByteValue :: Value -> Parser Word8
-parseByteValue = withText "byte" parseByte
+parseByteValue :: Aeson.Value -> Parser Value
+parseByteValue = withText "byte" parseByteText
 
-parseByte :: Text -> Parser Word8
-parseByte s = maybe err return (Base16.decodeByte s)
+parseByteText :: Text -> Parser Value
+parseByteText s = maybe err return (Base16.decodeByte s)
   where
     err :: Parser Word8
     err = fail $ "Invalid byte: " ++ show s
 
 parseStorage :: Object -> Parser Storage
 parseStorage = fmap (Storage . HashMap.fromList)
-  . traverse (bitraverse parseByte parseByteValue)
+  . traverse (bitraverse parseByteText parseByteValue)
   . HashMap.toList
+
+-- | Return the value to which the specified key is mapped,
+-- or `Nothing` if this map contains no value for the address (key).
+get :: Storage -> Address -> Maybe Value
+get (Storage h) k = HashMap.lookup k h
+
+-- | Puts value into the storage under the given address (key).
+put :: Storage -> Address -> Value -> Storage
+put (Storage h) k = Storage . update
+  where
+    update :: Value -> HashMap Address Value
+    update 0 = HashMap.delete k h
+    update v = HashMap.insert k v h

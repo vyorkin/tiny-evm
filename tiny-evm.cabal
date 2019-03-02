@@ -107,6 +107,7 @@ test-suite tiny-evm-test
                      , relude (Relude as Prelude)
   build-depends:       tiny-evm
                      , QuickCheck
+                     , quickcheck-instances
                      , generic-random
                      , hspec
                      , tasty
@@ -114,9 +115,10 @@ test-suite tiny-evm-test
                      , doctest
   build-tool-depends:  hspec-discover:hspec-discover == 2.*
   other-modules:       VM.StackSpec
+                     , VM.StorageSpec
+                     , VM.CodeSpec
                      , VM.InstructionSpec
                      , VM.Instruction.OpcodeSpec
                      , VM.Instruction.OperationSpec
-                     , VM.CodeSpec
   hs-source-dirs:      test
   main-is:             Spec.hs
