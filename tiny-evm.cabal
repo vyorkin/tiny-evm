@@ -72,6 +72,9 @@ library
                      , TinyEVM.VM.Instruction.Metadata
                      , TinyEVM.VM.Gas
                      , TinyEVM.VM.Gas.CostGroup
+                     , Data.Word256
+                     , Data.List.Extra
+                     , Text.Show.Extra
                      , Data.ByteString.Base16.Extra
   other-modules:       Paths_tiny_evm
   hs-source-dirs:      src
@@ -113,12 +116,15 @@ test-suite tiny-evm-test
                      , tasty
                      , tasty-hspec
                      , doctest
-  build-tool-depends:  hspec-discover:hspec-discover == 2.*
+  build-tool-depends:  tasty-discover:tasty-discover == 4.*
   other-modules:       VM.StackSpec
                      , VM.StorageSpec
+                     , VM.MemorySpec
                      , VM.CodeSpec
                      , VM.InstructionSpec
                      , VM.Instruction.OpcodeSpec
                      , VM.Instruction.OperationSpec
+                     , Data.List.ExtraSpec
+                     , Data.Word256Spec
   hs-source-dirs:      test
-  main-is:             Spec.hs
+  main-is:             Driver.hs

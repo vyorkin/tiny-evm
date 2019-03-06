@@ -1,0 +1,1 @@
+FailureReport {failureReportSeed = 341883247, failureReportMaxSuccess = 100, failureReportMaxSize = 100, failureReportMaxDiscardRatio = 10, failureReportPaths = [(["VM.Memory","Memory","newMemory"],"creates a valid empty memory")]}

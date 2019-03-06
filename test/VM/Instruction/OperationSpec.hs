@@ -2,7 +2,7 @@
 
 {-# LANGUAGE TypeOperators #-}
 
-module VM.Instruction.OperationSpec (spec) where
+module VM.Instruction.OperationSpec (spec_operation) where
 
 import Generic.Random
 import Test.Hspec
@@ -20,7 +20,7 @@ instance Arbitrary Operation where
       customGens :: Gen Int :+ ()
       customGens = choose(1, 32) :+ ()
 
-spec :: Spec
-spec = describe "Operation" $ do
+spec_operation :: Spec
+spec_operation = describe "TinyEVM.VM.Instruction.Operation" $ do
   it "roundtrips operations" $ property $ \op ->
     (decode . encode) op === Right op

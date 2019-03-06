@@ -41,8 +41,7 @@ parseByteValue = withText "byte" parseByteText
 parseByteText :: Text -> Parser Value
 parseByteText s = maybe err return (Base16.decodeByte s)
   where
-    err :: Parser Word8
-    err = fail $ "Invalid byte: " ++ show s
+    err = fail $ "Invalid byte: " <> show s
 
 parseStorage :: Object -> Parser Storage
 parseStorage = fmap (Storage . HashMap.fromList)

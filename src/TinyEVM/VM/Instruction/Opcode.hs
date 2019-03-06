@@ -8,9 +8,7 @@ module TinyEVM.VM.Instruction.Opcode
   , arity
   ) where
 
-import Prelude hiding (Show, show)
-
-import Text.Show (Show, show)
+import Prelude
 
 -- | Operation code of this toy VM.
 -- Specifies the operation to be performed.
@@ -19,10 +17,10 @@ type Opcode = Word8
 -- | An error that might occur when
 -- we encounter unknown/invalid opcode.
 newtype InvalidOpcode = InvalidOpcode Opcode
-  deriving (Eq)
+  deriving (Show, Eq)
 
-instance Show InvalidOpcode where
-  show (InvalidOpcode op) = "Invalid opcode: " ++ show op
+instance ToText InvalidOpcode where
+  toText (InvalidOpcode op) = "Invalid opcode: " <> show op
 
 push1 :: Opcode
 push1 = 0x60

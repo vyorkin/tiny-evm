@@ -15,7 +15,7 @@ import qualified TinyEVM.VM.Storage as Storage
 
 -- | Represents a TinyEVM program.
 -- Basically, this is a code, initial gas and a storage.
-data Program = Program Code Integer Storage
+data Program = Program Code Int Storage
   deriving (Eq, Show)
 
 instance FromJSON Program where

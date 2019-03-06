@@ -41,7 +41,7 @@ import Prelude hiding (div, mod)
 import Control.Lens (makeLenses)
 
 import TinyEVM.VM.Instruction.Metadata (Metadata)
-import TinyEVM.VM.Instruction.Opcode (InvalidOpcode, Opcode)
+import TinyEVM.VM.Instruction.Opcode (InvalidOpcode(..), Opcode)
 
 import TinyEVM.VM.Instruction.Operation (Operation (..))
 import qualified TinyEVM.VM.Instruction.Operation as Operation

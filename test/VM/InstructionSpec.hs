@@ -2,13 +2,13 @@
 
 module VM.InstructionSpec
   ( BadOpcode(..)
-  , spec
+  , spec_instruction
   ) where
-
-import Control.Lens ((^.))
 
 import Test.Hspec
 import Test.QuickCheck
+
+import Control.Lens ((^.))
 
 import TinyEVM.VM.Instruction
 import TinyEVM.VM.Instruction.Metadata ((|>))
@@ -31,22 +31,28 @@ instance Arbitrary Instruction where
 genOperands :: Operation -> Gen [Word8]
 genOperands = vector . Operation.arity
 
-spec :: Spec
-spec = describe "Instruction" $ do
-  it "makes simple instructions" $ do
-    add `shouldBe` Instruction
-      { _operation = Add
-      , _opcode    = 0x01
-      , _metadata  = 2 |> 1
-      , _operands  = []
-      }
-    push 2 [3, 7] `shouldBe` Instruction
-      { _operation = Push 2
-      , _opcode    = 0x61
-      , _metadata  = 0 |> 1
-      , _operands  = [3, 7]
-      }
+spec_instruction :: Spec
+spec_instruction = parallel $ do
+  describe "TinyEVM.VM.Instruction" $ do
+    it "makes simple instructions" $ do
+      add `shouldBe` Instruction
+        { _operation = Add
+        , _opcode    = 0x01
+        , _metadata  = 2 |> 1
+        , _operands  = []
+        }
+      push 2 [3, 7] `shouldBe` Instruction
+        { _operation = Push 2
+        , _opcode    = 0x61
+        , _metadata  = 0 |> 1
+        , _operands  = [3, 7]
+        }
 
-  context "given a valid bytecode" $ do
-    it "decodes properly" $ property $ \i ->
-      decodeOne (i ^. opcode) (i ^. operands) === Right (i, [])
+    describe "decodeOne" $ do
+      context "given a valid opcode and operands" $ do
+        it "decodes properly" $ property $ \i ->
+          decodeOne (i ^. opcode) (i ^. operands) === Right (i, [])
+
+      context "when provided with invalid opcode" $ do
+        it "returns an InvalidOpcode error" $ property $ \(BadOpcode op) args ->
+          decodeOne op args === Left (InvalidOpcode op)

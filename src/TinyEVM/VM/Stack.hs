@@ -10,9 +10,7 @@ module TinyEVM.VM.Stack
   , maxSize
   ) where
 
-import Prelude hiding (Show, empty, show)
-
-import Text.Show (Show, show)
+import Prelude hiding (empty)
 
 -- | Represents a VM stack.
 newtype Stack = Stack { unStack :: [Integer] }
@@ -26,11 +24,14 @@ data StackError
   = StackOverflow Integer
   -- | Used when the stack doesn't have enough items.
   | StackUnderflow
-  deriving (Eq)
+  deriving (Eq, Show)
 
-instance Show StackError where
-  show (StackOverflow v) = "Stack overflow when attempting to push value: " ++ show v
-  show StackUnderflow    = "Stack underflow"
+instance ToText StackError where
+  toText StackUnderflow = "Stack underflow"
+  toText (StackOverflow v) = unlines
+    [ "Stack overflow when attempting to push value: "
+    , show v
+    ]
 
 -- | Creates a new empty stack.
 empty :: Stack
