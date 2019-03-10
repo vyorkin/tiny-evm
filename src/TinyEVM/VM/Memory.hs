@@ -17,22 +17,22 @@ module TinyEVM.VM.Memory
   , maxOffset
   ) where
 
-import Prelude
+import Prelude hiding (words)
 
 import qualified Data.ByteString as ByteString
 import Data.Vector.Unboxed.Mutable (IOVector)
 import qualified Data.Vector.Unboxed.Mutable as IOVector
+import Data.Vector.Unboxed.Mutable.Extra (readBytes, writeBytes)
 import Text.Show (Show)
 
 import qualified Data.ByteString.Base16.Extra as Base16
-import Data.List.Extra (padRight)
 import Data.Word256 (Word256(..))
 import qualified Data.Word256 as Word256
 
--- | Represents a VM memory.
+-- | Represents a (mutable) VM memory.
 data Memory = Memory
-  { vec :: IOVector Word8 -- ^ Internal representation of the VM memory.
-  , pos :: IORef Int      -- ^ Index of the highest memory location used.
+  { vector :: IOVector Word8 -- ^ Internal representation of the VM memory.
+  , wordIx :: IORef Int      -- ^ Index of the highest word.
   }
 
 -- | Represents an error that
@@ -51,15 +51,15 @@ instance ToText MemoryError where
 -- | Creates a new empty `Memory` given the initial capacity (in words).
 newMemory :: Int -> IO Memory
 newMemory capacity = do
-  vec <- IOVector.new $ capacity * Word256.bytes
-  pos <- newIORef 0
+  vector <- IOVector.new $ capacity * Word256.bytes
+  wordIx <- newIORef 0
   return Memory {..}
 
 -- | Creates a new `Memory` from the given `IOVector`.
 fromIOVector :: IOVector Word8 -> IO Memory
-fromIOVector vec = do
-  let len = IOVector.length vec
-  pos <- newIORef len
+fromIOVector vector = do
+  let len = IOVector.length vector
+  wordIx <- newIORef $ len `div` Word256.bytes
   return Memory {..}
 
 -- | Reads a value at the given offset.
@@ -69,32 +69,39 @@ read mem offset = Word256.toInt <$> readWord mem offset
 -- | Reads a "word" out of memory starting from the given offset.
 -- Returns a word of `0`-bytes if the offset is too high.
 readWord :: Memory -> Int -> IO Word256
-readWord mem o = Word256 <$> readBytes mem o Word256.bytes
+readWord mem o = Word256 <$> readBytes (vector mem) o Word256.bytes
 
--- | Reads the given number of bytes out of memory starting from the given offset.
--- Returns a list of `0`-bytes if the offset is too high.
-readBytes :: Memory -> Int -> Int -> IO [Word8]
-readBytes mem o n = traverse (readByte $ vec mem) (range o n)
-
--- | Reads a single byte out of the vector at the given offset.
--- Returns `0` if the offset is too high (for convenience).
-readByte :: IOVector Word8 -> Int -> IO Word8
-readByte v o
-  | o < IOVector.length v = IOVector.read v o
-  | otherwise             = return 0
-
--- | Writes value at the given offset.
+-- | Writes at the given offset.
 write :: Memory -> Int -> Int -> IO (Either MemoryError Memory)
 write mem offset val = writeWord mem offset (Word256.fromInt val)
 
 -- | Writes a `Word256` at the given offset.
 writeWord :: Memory -> Int -> Word256 -> IO (Either MemoryError Memory)
-writeWord mem offset word = do
-  size <- readIORef (pos mem)
+writeWord mem offset word
+  | offset > maxOffset = return $ Left $ OutOfMemory (offset, word)
+  | otherwise = do
+      mem' <- expand mem (offset + Word256.bytes)
+      writeBytes (vector mem') offset (Word256.toBytes word)
+      return $ Right mem'
+
+-- | Expands the `Memory` capacity, if needed.
+expand :: Memory -> Int -> IO Memory
+expand mem 0 = return mem
+expand mem needed = do
   let
-    needed = offset + Word256.bytes
-    len = IOVector.length (vec mem)
-  return $ Right mem
+    capacity = IOVector.length (vector mem)
+    remaining = max 0 (needed - capacity)
+  mem' <- grow mem remaining
+  let words' = needed `div` Word256.bytes + 1
+  writeIORef (wordIx mem') words'
+  return mem'
+
+-- | Grows a memory by the given number of bytes.
+grow :: Memory -> Int -> IO Memory
+grow (Memory v i) k = do
+  let n = k + Word256.bytes * capacityFactor
+  v' <- IOVector.grow v n
+  return $ Memory v' i
 
 -- | Converts `Memory` to a base16 text prefixed by the `"0x"`.
 toHex :: Memory -> IO Text
@@ -103,19 +110,13 @@ toHex mem = Base16.encode <$> toByteString mem
 -- | Converts `Memory` to a `ByteString`.
 toByteString :: Memory -> IO ByteString
 toByteString mem = do
-  size <- readIORef (pos mem)
-  ByteString.pack <$> readBytes mem 0 size
+  words <- readIORef (wordIx mem)
+  ByteString.pack <$> readBytes (vector mem) 0 (words * Word256.bytes)
 
--- | Capacity increase factor.
-capacityFactor :: Float
-capacityFactor = 0.5
+-- | Capacity increase factor (in words).
+capacityFactor :: Int
+capacityFactor = 10
 
 -- | Maximum allowed offset (128 words).
 maxOffset :: Int
 maxOffset = 128 * Word256.bytes
-
-wordRange :: Int -> [Int]
-wordRange = flip range Word256.bytes
-
-range :: Int -> Int -> [Int]
-range i n = [i..i + n - 1]

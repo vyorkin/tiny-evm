@@ -8,6 +8,9 @@ import Test.QuickCheck
 import Data.Word256 (Word256(..), fromInt, toInt)
 import qualified Data.Word256 as Word256
 
+instance Arbitrary Word256 where
+  arbitrary = Word256.fromInt . (+ 1) . getPositive <$> arbitrary
+
 spec_word256 :: Spec
 spec_word256 = parallel $
   describe "Data.Word256" $ do

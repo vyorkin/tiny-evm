@@ -73,7 +73,9 @@ library
                      , TinyEVM.VM.Gas
                      , TinyEVM.VM.Gas.CostGroup
                      , Data.Word256
+                     , Data.Ord.Extra
                      , Data.List.Extra
+                     , Data.Vector.Unboxed.Mutable.Extra
                      , Text.Show.Extra
                      , Data.ByteString.Base16.Extra
   other-modules:       Paths_tiny_evm

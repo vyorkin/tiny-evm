@@ -11,7 +11,7 @@ module Data.Word256
   , bytes
   ) where
 
-import Text.Show.Extra (toBytes)
+import qualified Text.Show.Extra as Show (toBytes)
 import qualified Data.ByteString as ByteString
 import qualified Data.ByteString.Char8 as Char8
 
@@ -19,7 +19,7 @@ import qualified Data.ByteString.Base16.Extra as Base16
 import Data.List.Extra (padLeft)
 
 -- | Represents a 32-byte word.
-newtype Word256 = Word256 [Word8]
+newtype Word256 = Word256 { toBytes :: [Word8] }
   deriving (Show, Eq)
 
 instance ToText Word256 where
@@ -38,7 +38,7 @@ toInt (Word256 bs) =
 
 -- | Converts `Int` to `Word256`.
 fromInt :: Int -> Word256
-fromInt = Word256 . pad . toBytes
+fromInt = Word256 . pad . Show.toBytes
 
 -- | Returns number of significant bytes in word.
 size :: Word256 -> Int

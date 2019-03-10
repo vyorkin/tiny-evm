@@ -1,4 +1,5 @@
---format=progress
+--color
+--format=specdoc
 --rerun-all-on-success
 --rerun
 --failure-report .hspec-failures
