@@ -7,14 +7,20 @@ module TinyEVM.Env
   ( Env(..)
   , mkEnv
   , logger
+  , code
   , vm
+  , trace
   ) where
+
+import Prelude hiding (trace)
 
 import Colog (HasLog, LogAction, Message, cmapM, defaultFieldMap,
               fmtRichMessageDefault, getLogAction, liftLogIO, logTextStdout,
-              setLogAction, upgradeMessageAction, withLogTextFile)
+              setLogAction, upgradeMessageAction)
 import Control.Lens (makeLenses, (.~), (^.))
-import qualified TinyEVM.VM as VM
+import TinyEVM.VM.Program (Program (..))
+import TinyEVM.VM.Code (Code (..))
+import qualified TinyEVM.VM.State as VM
 
 -- | Global environment stores read-only information and
 -- mutable refs to global state available to any
@@ -22,7 +28,12 @@ import qualified TinyEVM.VM as VM
 data Env m = Env
   { -- | A `LogAction` to be used by the `co-log` package.
     _logger :: !(LogAction m Message)
-  , _vm     :: !VM.State
+    -- | Code to be executed.
+  , _code :: !Code
+    -- | Reference to a VM state.
+  , _vm :: !(IORef VM.State)
+    -- | Whether to trace the VM execution.
+  , _trace :: !Bool
   }
 
 makeLenses ''Env
@@ -36,12 +47,12 @@ instance HasLog (Env m) Message m where
 
 -- | Creates a record that matches the `Env` type our
 -- application requires by filling in necessary fields.
-mkEnv :: MonadIO m => LogAction IO Text -> Env m
-mkEnv = undefined
--- mkEnv cfg net logTextFile = do
---   let
---     logText   = logTextStdout <> logTextFile
---     logRich   = cmapM fmtRichMessageDefault logText
---     logFull   = upgradeMessageAction defaultFieldMap logRich
---     logAction = liftLogIO logFull
---   Env logAction vm
+mkEnv :: MonadIO m => LogAction IO Text -> Program -> IO (Env m)
+mkEnv logTextFile (Program code' gas' storage') = do
+  let
+    logText = logTextStdout <> logTextFile
+    logRich = cmapM fmtRichMessageDefault logText
+    logFull = upgradeMessageAction defaultFieldMap logRich
+    logAction = liftLogIO logFull
+  vmState <- VM.mkState gas' storage' >>= newIORef
+  return $ Env logAction code' vmState True

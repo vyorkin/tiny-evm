@@ -8,7 +8,7 @@ module TinyEVM.VM.Instruction
   , opcode
   , metadata
   , operands
-    -- * Operations
+    -- * perations
   , mkInstr
   , mkInstrN
   , encode

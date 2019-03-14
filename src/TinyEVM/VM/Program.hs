@@ -1,17 +1,12 @@
 module TinyEVM.VM.Program
   ( -- * The @Program@ type
     Program(..)
-  , Code(..)
-    -- * Operations
   ) where
 
-import Data.Aeson (FromJSON, ToJSON, Value (..), parseJSON, withObject, (.:))
+import Data.Aeson (FromJSON, parseJSON, withObject, (.:))
 
-import qualified Data.ByteString.Base16.Extra as Base16
 import TinyEVM.VM.Code (Code (..))
-import TinyEVM.VM.Instruction (Instruction)
 import TinyEVM.VM.Storage (Storage)
-import qualified TinyEVM.VM.Storage as Storage
 
 -- | Represents a TinyEVM program.
 -- Basically, this is a code, initial gas and a storage.

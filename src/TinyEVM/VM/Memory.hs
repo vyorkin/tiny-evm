@@ -23,10 +23,9 @@ import qualified Data.ByteString as ByteString
 import Data.Vector.Unboxed.Mutable (IOVector)
 import qualified Data.Vector.Unboxed.Mutable as IOVector
 import Data.Vector.Unboxed.Mutable.Extra (readBytes, writeBytes)
-import Text.Show (Show)
 
 import qualified Data.ByteString.Base16.Extra as Base16
-import Data.Word256 (Word256(..))
+import Data.Word256 (Word256 (..))
 import qualified Data.Word256 as Word256
 
 -- | Represents a (mutable) VM memory.
@@ -67,7 +66,7 @@ read :: Memory -> Int -> IO Int
 read mem offset = Word256.toInt <$> readWord mem offset
 
 -- | Reads a "word" out of memory starting from the given offset.
--- Returns a word of `0`-bytes if the offset is too high.
+  -- Returns a word of `0`-bytes if the offset is too high.
 readWord :: Memory -> Int -> IO Word256
 readWord mem o = Word256 <$> readBytes (vector mem) o Word256.bytes
 
@@ -84,7 +83,7 @@ writeWord mem offset word
       writeBytes (vector mem') offset (Word256.toBytes word)
       return $ Right mem'
 
--- | Expands the `Memory` capacity, if needed.
+-- | Expands the memory capacity, if needed.
 expand :: Memory -> Int -> IO Memory
 expand mem 0 = return mem
 expand mem needed = do

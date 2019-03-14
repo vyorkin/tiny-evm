@@ -25,6 +25,7 @@ common main
                      , aeson ^>= 1.4
                      , mtl ^>= 2.2
                      , mmorph ^>= 1.1
+                     , natural-transformation ^>= 0.4
                      , lens ^>= 4.17
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings

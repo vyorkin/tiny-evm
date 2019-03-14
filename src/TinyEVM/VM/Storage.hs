@@ -6,6 +6,7 @@ module TinyEVM.VM.Storage
   , Address
   , Value
     -- * Opreations
+  , empty
   , get
   , put
   ) where
@@ -34,6 +35,10 @@ newtype Storage = Storage
 
 instance FromJSON Storage where
   parseJSON = withObject "storage" parseStorage
+
+-- | Creates a new empty storage.
+empty :: Storage
+empty = Storage HashMap.empty
 
 parseByteValue :: Aeson.Value -> Parser Value
 parseByteValue = withText "byte" parseByteText
