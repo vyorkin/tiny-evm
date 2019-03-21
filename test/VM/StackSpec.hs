@@ -18,6 +18,9 @@ spec_stack = parallel $ do
     it "pushes a value" $ property $ \x stack ->
       Stack.push x stack === Right (Stack $ x : unStack stack)
 
+    it "pushes multiple values" $ property $ \(NonEmpty xs) stack ->
+      Stack.pushN xs stack === Right (Stack $ reverse xs ++ unStack stack)
+
     it "pops a value" $ property $ \x xs ->
       Stack.pop (Stack (x:xs)) === Right (x, Stack xs)
 

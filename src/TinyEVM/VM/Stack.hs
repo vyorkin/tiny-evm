@@ -5,12 +5,16 @@ module TinyEVM.VM.Stack
     -- * Operations
   , empty
   , push
+  , pushN
   , pop
   , popN
+  , peek
   , maxSize
   ) where
 
 import Prelude hiding (empty)
+
+import Data.Foldable (foldrM)
 
 -- | Represents a VM stack.
 newtype Stack = Stack { unStack :: [Integer] }
@@ -37,11 +41,20 @@ instance ToText StackError where
 empty :: Stack
 empty = Stack []
 
+-- | Pop most recently added item without removing from the `Stack`.`
+peek :: Stack -> Either StackError (Integer, Stack)
+peek (Stack (x:xs)) = Right (x, Stack (x:xs))
+peek _              = Left StackUnderflow
+
 -- | Pushes value to the stack.
 push :: Integer -> Stack -> Either StackError Stack
-push x (Stack xs)
+push x (Stack xs) 
   | length xs >= maxSize = Left $ StackOverflow x
   | otherwise = Right $ Stack (x:xs)
+
+-- | Pushes multiple values to the stack.
+pushN :: [Integer] -> Stack -> Either StackError Stack
+pushN xs stack = foldlM (flip push) stack xs
 
 -- | Pops value from the stack,
 -- returns that value and a new stack with value popped.
