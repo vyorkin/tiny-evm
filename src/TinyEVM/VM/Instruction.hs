@@ -8,28 +8,11 @@ module TinyEVM.VM.Instruction
   , opcode
   , metadata
   , operands
-    -- * perations
+    -- * Operations
   , mkInstr
   , mkInstrN
   , encode
   , decodeOne
-    -- * Instructions
-  , add
-  , mul
-  , sub
-  , div
-  , sdiv
-  , mod
-  , smod
-  , addMod
-  , mulMod
-  , signExtend
-  , push
-  , pop
-  , mload
-  , mstore
-  , sload
-  , sstore
     -- * Re-exports
   , module TinyEVM.VM.Instruction.Metadata
   , module TinyEVM.VM.Instruction.Opcode
@@ -42,7 +25,6 @@ import Control.Lens (makeLenses)
 
 import TinyEVM.VM.Instruction.Metadata (Metadata)
 import TinyEVM.VM.Instruction.Opcode (InvalidOpcode (..), Opcode)
-
 import TinyEVM.VM.Instruction.Operation (Operation (..))
 import qualified TinyEVM.VM.Instruction.Operation as Operation
 
@@ -89,27 +71,3 @@ mkInstr op args = Instruction
 
 mkInstrN :: Operation -> Instruction
 mkInstrN = flip mkInstr []
-
-push :: Int -> [Word8] -> Instruction
-push n = mkInstr (Push n)
-
--- TODO: use TH, possibly
-
-add, mul, sub, div, sdiv, mod, smod, addMod, mulMod,
-  signExtend, pop, mload, mstore, sload, sstore :: Instruction
-
-add = mkInstrN Add
-mul = mkInstrN Mul
-sub = mkInstrN Sub
-div = mkInstrN Div
-sdiv = mkInstrN SDiv
-mod = mkInstrN Mod
-smod = mkInstrN SMod
-addMod = mkInstrN AddMod
-mulMod = mkInstrN MulMod
-signExtend = mkInstrN SignExtend
-pop = mkInstrN Pop
-mload = mkInstrN MLoad
-mstore = mkInstrN MStore
-sload = mkInstrN SLoad
-sstore = mkInstrN SStore

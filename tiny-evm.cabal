@@ -13,7 +13,7 @@ extra-source-files:  CHANGELOG.md
 
 common main
   build-depends:       base
-                     , relude ^>= 0.4
+                     , relude ^>= 0.5
                      , co-log ^>= 0.2
                      , text ^>= 1.2
                      , bytestring ^>= 0.10
@@ -27,6 +27,7 @@ common main
                      , mmorph ^>= 1.1
                      , natural-transformation ^>= 0.4
                      , lens ^>= 4.17
+                     , template-haskell ^>= 2.14
   default-language:    Haskell2010
   default-extensions:  OverloadedStrings
 
@@ -57,7 +58,7 @@ library
                        -Wmissing-export-lists
                        -Wpartial-fields
   mixins:              base hiding (Prelude)
-                     , relude (Relude as Prelude)
+                     , relude (Relude as Prelude, Relude.Unsafe)
   exposed-modules:     TinyEVM
                      , TinyEVM.Env
                      , TinyEVM.VM
@@ -71,6 +72,8 @@ library
                      , TinyEVM.VM.Instruction.Operation
                      , TinyEVM.VM.Instruction.Opcode
                      , TinyEVM.VM.Instruction.Metadata
+                     , TinyEVM.VM.Instruction.TH
+                     , TinyEVM.VM.Instruction.DSL
                      , TinyEVM.VM.Gas
                      , TinyEVM.VM.Gas.CostGroup
                      , Data.Word256
@@ -79,6 +82,12 @@ library
                      , Data.Vector.Unboxed.Mutable.Extra
                      , Text.Show.Extra
                      , Data.ByteString.Base16.Extra
+                     , Sandbox.TH1
+                     , Sandbox.TH2
+                     , Sandbox.TH3
+                     , Sandbox.TH4
+                     , Sandbox.TH5
+                     , Sandbox.TH6
   other-modules:       Paths_tiny_evm
   hs-source-dirs:      src
 
@@ -110,7 +119,7 @@ test-suite tiny-evm-test
                        -fno-warn-missing-export-lists
   type:                exitcode-stdio-1.0
   mixins:              base hiding (Prelude)
-                     , relude (Relude as Prelude)
+                     , relude (Relude as Prelude, Relude.Unsafe)
   build-depends:       tiny-evm
                      , QuickCheck
                      , quickcheck-instances

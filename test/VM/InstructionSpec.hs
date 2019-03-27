@@ -11,6 +11,7 @@ import Test.QuickCheck
 import Control.Lens ((^.))
 
 import TinyEVM.VM.Instruction
+import TinyEVM.VM.Instruction.DSL
 import TinyEVM.VM.Instruction.Metadata ((|>))
 import qualified TinyEVM.VM.Instruction.Opcode as Opcode
 import qualified TinyEVM.VM.Instruction.Operation as Operation

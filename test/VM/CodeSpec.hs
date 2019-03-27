@@ -5,8 +5,11 @@ module VM.CodeSpec (spec_code) where
 import Test.Hspec
 import Test.QuickCheck
 
+import Prelude hiding (add)
+
 import TinyEVM.VM.Code (Code (..), decode, encode)
-import TinyEVM.VM.Instruction (Instruction, InvalidOpcode(..), add, opcode, operands, push)
+import TinyEVM.VM.Instruction.DSL (add, push)
+import TinyEVM.VM.Instruction (Instruction, InvalidOpcode(..), opcode, operands)
 import qualified TinyEVM.VM.Instruction as Instruction
 import VM.InstructionSpec (BadOpcode(..))
 

@@ -11,3 +11,6 @@ clean:
 	cabal new-clean
 
 .PHONY: build repl test clean
+
+# to dump TH splices:
+# --ghc-options="-ddump-splices"
