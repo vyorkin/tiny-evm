@@ -19,6 +19,7 @@ common main
                      , bytestring ^>= 0.10
                      , base16-bytestring ^>= 0.1
                      , errors ^>= 2.3
+                     , exceptions ^>= 0.10
                      , containers ^>= 0.6
                      , unordered-containers >= 0.2
                      , vector ^>= 0.12
@@ -76,6 +77,8 @@ library
                      , TinyEVM.VM.Instruction.DSL
                      , TinyEVM.VM.Gas
                      , TinyEVM.VM.Gas.CostGroup
+                     , TinyEVM.VM.Exception
+                     , Control.Monad.Throw.Extra
                      , Data.Word256
                      , Data.Ord.Extra
                      , Data.List.Extra
@@ -136,6 +139,7 @@ test-suite tiny-evm-test
                      , VM.InstructionSpec
                      , VM.Instruction.OpcodeSpec
                      , VM.Instruction.OperationSpec
+                     , VMSpec
                      , Data.List.ExtraSpec
                      , Data.Word256Spec
   hs-source-dirs:      test

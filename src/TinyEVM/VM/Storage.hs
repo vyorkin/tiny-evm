@@ -6,12 +6,14 @@ module TinyEVM.VM.Storage
   , Address
   , Value
     -- * Opreations
+  , fromList
+  , toList
   , empty
   , get
   , put
   ) where
 
-import Prelude hiding (empty, get, put)
+import Prelude hiding (empty, get, put, fromList, toList)
 
 import Data.Aeson (FromJSON, parseJSON, withObject, withText)
 import qualified Data.Aeson as Aeson (Value (..))
@@ -40,6 +42,12 @@ instance FromJSON Storage where
 empty :: Storage
 empty = Storage HashMap.empty
 
+fromList :: [(Address, Value)] -> Storage
+fromList = Storage . HashMap.fromList
+
+toList :: Storage -> [(Address, Value)] 
+toList = HashMap.toList . unStorage
+
 parseByteValue :: Aeson.Value -> Parser Value
 parseByteValue = withText "byte" parseByteText
 
@@ -49,7 +57,7 @@ parseByteText s = maybe err return (Base16.decodeByte s)
     err = fail $ "Invalid byte: " <> show s
 
 parseStorage :: Object -> Parser Storage
-parseStorage = fmap (Storage . HashMap.fromList)
+parseStorage = fmap fromList
   . traverse (bitraverse parseByteText parseByteValue)
   . HashMap.toList
 

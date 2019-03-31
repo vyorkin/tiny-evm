@@ -6,7 +6,7 @@ import Test.Hspec
 import Test.QuickCheck
 import Test.QuickCheck.Arbitrary (vector)
 
-import TinyEVM.VM.Stack (Stack (..), StackError (..), unStack)
+import TinyEVM.VM.Stack (Stack (..), StackError (..))
 import qualified TinyEVM.VM.Stack as Stack
 
 instance Arbitrary Stack where
@@ -16,7 +16,7 @@ spec_stack :: Spec
 spec_stack = parallel $ do
   describe "TinyEVM.VM.Stack" $ do
     it "pushes a value" $ property $ \x stack ->
-      Stack.push x stack === Right (Stack $ x : unStack stack)
+      Stack.push x stack === Right (Stack.fromList $ x : Stack.toList stack)
 
     it "pushes multiple values" $ property $ \(NonEmpty xs) stack ->
       Stack.pushN xs stack === Right (Stack $ reverse xs ++ unStack stack)

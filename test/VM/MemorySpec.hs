@@ -5,12 +5,13 @@ import Test.QuickCheck hiding (vector)
 import Test.QuickCheck.Instances.Vector ()
 import Test.QuickCheck.Monadic (assert, monadicIO, run, monitor)
 
+import Control.Exception (try, catch)
 import qualified Data.Vector.Unboxed.Mutable as IOVector
 
 import Data.Word256 (Word256)
 import Data.Vector.Unboxed.Mutable.Extra (readBytes)
 import qualified Data.Word256 as Word256
-import TinyEVM.VM.Memory (Memory (..), MemoryError (..), newMemory, maxOffset)
+import TinyEVM.VM.Memory (Memory(..), MemoryException(..), newMemory, maxOffset)
 import qualified TinyEVM.VM.Memory as Memory
 import Data.Word256Spec ()
 
@@ -38,18 +39,19 @@ spec_memory = do
         it "writes correctly" $ property $
           \word (Capacity capacity) (Positive offset) ->
             monadicIO $ do
-              let size = Word256.size word
-              mem <- run $ newMemory capacity
-              -- run $ traceShowM $ Word256.toHex word
-              (Right mem') <- run $ Memory.writeWord mem offset word
-              -- run $ Memory.toHex mem' >>= traceShowM
               let
-                start = offset + Word256.bytes - size
-                slice = IOVector.slice start (size + 1) (vector mem')
-              -- run $ traceShowM (start, size)
-              -- run $ readBytes slice 0 (IOVector.length slice) >>= traceShowM
-              actual <- run $ readBytes slice 0 size
-              let expected = Word256.significant word
+                size = Word256.size word
+                expected = Word256.significant word
+              actual <- run $ do
+                -- traceShowM $ Word256.toHex word
+                mem <- newMemory capacity >>= Memory.writeWord offset word
+                -- Memory.toHex mem >>= traceShowM
+                let
+                  start = offset + Word256.bytes - size
+                  slice = IOVector.slice start (size + 1) (vector mem)
+                -- traceShowM (start, size)
+                -- readBytes slice 0 (IOVector.length slice) >>= traceShowM
+                readBytes slice 0 size
               monitor (counterexample $ show actual <> " /= " <> show expected)
               assert $ actual == expected
 
@@ -57,27 +59,28 @@ spec_memory = do
         it "returns OutOfMemory error" $ property $
           \word (Capacity capacity) (Positive offset) ->
             monadicIO $ do
-              mem <- run $ newMemory capacity
               let offset' = maxOffset + offset
-              (Left err) <- run $ Memory.writeWord mem offset' word
+              Left err <- run $ do
+                mem <- newMemory capacity
+                try $ Memory.writeWord offset' word mem
               assert $ err == OutOfMemory (offset', word)
 
     describe "readWord" $ do
-      it "reads word that has been written" $ property $
+      it "reads the word that has been written" $ property $
         \word (Capacity capacity) (Positive offset) ->
           monadicIO $ do
-            mem <- run $ newMemory capacity
-            (Right mem') <- run $ Memory.writeWord mem offset word
-            word' <- run $ Memory.readWord mem' offset
-            -- run $ Memory.toHex mem' >>= traceShowM
+            word' <- run $ do
+              mem <- newMemory capacity >>= Memory.writeWord offset word
+              Memory.readWord offset mem
+              -- Memory.toHex mem >>= traceShowM
             assert $ word' == word
 
     describe "readValue" $ do
-      it "reads value that has been written" $ property $
-        \(Capacity capacity) (Positive value) (Positive offset) ->
+      it "reads the value that has been written" $ property $
+        \(Capacity capacity) (Positive v) (Positive offset) ->
           monadicIO $ do
-            mem <- run $ newMemory capacity
-            (Right mem') <- run $ Memory.write mem offset value
-            value' <- run $ Memory.read mem' offset
-            -- run $ Memory.toHex mem' >>= traceShowM
-            assert $ value' == value
+            value <- run $ do
+              mem <- newMemory capacity >>= Memory.write offset v
+              Memory.read offset mem
+              -- Memory.toHex mem >>= traceShowM
+            assert $ value == v

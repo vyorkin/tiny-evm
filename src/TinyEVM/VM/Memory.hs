@@ -3,7 +3,7 @@
 module TinyEVM.VM.Memory
   ( -- * The @Memory@ type
     Memory(..)
-  , MemoryError(..)
+  , MemoryException(..)
     -- * Operations
   , newMemory
   , fromIOVector
@@ -19,6 +19,7 @@ module TinyEVM.VM.Memory
 
 import Prelude hiding (words)
 
+import Control.Exception (throwIO)
 import qualified Data.ByteString as ByteString
 import Data.Vector.Unboxed.Mutable (IOVector)
 import qualified Data.Vector.Unboxed.Mutable as IOVector
@@ -36,10 +37,12 @@ data Memory = Memory
 
 -- | Represents an error that
 -- might occur when working with `Memory`.
-data MemoryError = OutOfMemory (Int, Word256)
+data MemoryException = OutOfMemory (Int, Word256)
   deriving (Eq, Show)
 
-instance ToText MemoryError where
+instance Exception MemoryException
+
+instance ToText MemoryException where
   toText (OutOfMemory (offset, word)) = unlines
     [ "Out of memory when attempting to write at offset "
     , show offset
@@ -62,42 +65,42 @@ fromIOVector vector = do
   return Memory {..}
 
 -- | Reads a value at the given offset.
-read :: Memory -> Int -> IO Int
-read mem offset = Word256.toInt <$> readWord mem offset
+read :: Int -> Memory -> IO Int
+read offset mem = Word256.toInt <$> readWord offset mem
 
 -- | Reads a "word" out of memory starting from the given offset.
   -- Returns a word of `0`-bytes if the offset is too high.
-readWord :: Memory -> Int -> IO Word256
-readWord mem o = Word256 <$> readBytes (vector mem) o Word256.bytes
+readWord :: Int -> Memory -> IO Word256
+readWord offset mem = Word256 <$> readBytes (vector mem) offset Word256.bytes
 
 -- | Writes at the given offset.
-write :: Memory -> Int -> Int -> IO (Either MemoryError Memory)
-write mem offset val = writeWord mem offset (Word256.fromInt val)
+write :: Int -> Int -> Memory -> IO Memory
+write offset val mem = writeWord offset (Word256.fromInt val) mem
 
 -- | Writes a `Word256` at the given offset.
-writeWord :: Memory -> Int -> Word256 -> IO (Either MemoryError Memory)
-writeWord mem offset word
-  | offset > maxOffset = return $ Left $ OutOfMemory (offset, word)
+writeWord :: Int -> Word256 -> Memory -> IO Memory
+writeWord offset word mem
+  | offset > maxOffset = throwIO $ OutOfMemory (offset, word)
   | otherwise = do
-      mem' <- expand mem (offset + Word256.bytes)
+      mem' <- expand (offset + Word256.bytes) mem
       writeBytes (vector mem') offset (Word256.toBytes word)
-      return $ Right mem'
+      return mem'
 
 -- | Expands the memory capacity, if needed.
-expand :: Memory -> Int -> IO Memory
-expand mem 0 = return mem
-expand mem needed = do
+expand :: Int -> Memory -> IO Memory
+expand 0 mem = return mem
+expand needed mem = do
   let
     capacity = IOVector.length (vector mem)
     remaining = max 0 (needed - capacity)
-  mem' <- grow mem remaining
+  mem' <- grow remaining mem
   let words' = needed `div` Word256.bytes + 1
   writeIORef (wordIx mem') words'
   return mem'
 
 -- | Grows a memory by the given number of bytes.
-grow :: Memory -> Int -> IO Memory
-grow (Memory v i) k = do
+grow :: Int -> Memory -> IO Memory
+grow k (Memory v i) = do
   let n = k + Word256.bytes * capacityFactor
   v' <- IOVector.grow v n
   return $ Memory v' i

@@ -1,6 +1,6 @@
 module TinyEVM.VM.Gas.CostGroup
   ( CostGroup
-  , toInteger
+  , toInt
   , zero
   , base
   , verylow
@@ -9,7 +9,7 @@ module TinyEVM.VM.Gas.CostGroup
   , costGroup
   ) where
 
-import Prelude hiding (group, toInteger)
+import Prelude hiding (group, toInt)
 
 import TinyEVM.VM.Instruction.Operation (Operation (..))
 
@@ -24,8 +24,8 @@ data CostGroup
   deriving (Ord, Eq, Show)
 
 -- | Get an amount of gas to pay for the given cost group.
-toInteger :: CostGroup -> Integer
-toInteger group = case group of
+toInt :: CostGroup -> Int
+toInt group = case group of
   Zero    -> 0
   Base    -> 2
   VeryLow -> 3

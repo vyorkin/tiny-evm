@@ -13,6 +13,7 @@ module TinyEVM.VM.Instruction
   , mkInstrN
   , encode
   , decodeOne
+  , isHalt
     -- * Re-exports
   , module TinyEVM.VM.Instruction.Metadata
   , module TinyEVM.VM.Instruction.Opcode
@@ -71,3 +72,8 @@ mkInstr op args = Instruction
 
 mkInstrN :: Operation -> Instruction
 mkInstrN = flip mkInstr []
+
+-- | Checks wWhether the given `Instruction` is a normal halting.
+isHalt :: Instruction -> Bool
+isHalt (Instruction Stop _ _ _) = True
+isHalt _ = False

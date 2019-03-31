@@ -3,6 +3,8 @@ module TinyEVM.VM.Stack
     Stack(..)
   , StackError(..)
     -- * Operations
+  , fromList
+  , toList
   , empty
   , push
   , pushN
@@ -12,12 +14,10 @@ module TinyEVM.VM.Stack
   , maxSize
   ) where
 
-import Prelude hiding (empty)
-
-import Data.Foldable (foldrM)
+import Prelude hiding (empty, fromList, toList)
 
 -- | Represents a VM stack.
-newtype Stack = Stack { unStack :: [Integer] }
+newtype Stack = Stack { unStack :: [Word8] }
   deriving (Eq, Show)
 
 -- | Represents an error that
@@ -25,7 +25,7 @@ newtype Stack = Stack { unStack :: [Integer] }
 data StackError
   -- | Used when the stack overflows
   -- because it contains too many items.
-  = StackOverflow Integer
+  = StackOverflow Word8
   -- | Used when the stack doesn't have enough items.
   | StackUnderflow
   deriving (Eq, Show)
@@ -41,31 +41,38 @@ instance ToText StackError where
 empty :: Stack
 empty = Stack []
 
+-- | Creates a new stack from the given list.
+fromList :: [Word8] -> Stack
+fromList = Stack
+
+toList :: Stack -> [Word8]
+toList = unStack
+
 -- | Pop most recently added item without removing from the `Stack`.`
-peek :: Stack -> Either StackError (Integer, Stack)
+peek :: Stack -> Either StackError (Word8, Stack)
 peek (Stack (x:xs)) = Right (x, Stack (x:xs))
 peek _              = Left StackUnderflow
 
 -- | Pushes value to the stack.
-push :: Integer -> Stack -> Either StackError Stack
-push x (Stack xs) 
+push :: Word8 -> Stack -> Either StackError Stack
+push x (Stack xs)
   | length xs >= maxSize = Left $ StackOverflow x
   | otherwise = Right $ Stack (x:xs)
 
 -- | Pushes multiple values to the stack.
-pushN :: [Integer] -> Stack -> Either StackError Stack
+pushN :: [Word8] -> Stack -> Either StackError Stack
 pushN xs stack = foldlM (flip push) stack xs
 
 -- | Pops value from the stack,
 -- returns that value and a new stack with value popped.
-pop :: Stack -> Either StackError (Integer, Stack)
+pop :: Stack -> Either StackError (Word8, Stack)
 pop (Stack (x:xs)) = Right (x, Stack xs)
 pop _              = Left StackUnderflow
 
 -- | Pops multiple values off of stack,
 -- returning these values and a new stack less that many elements.
 -- Returns a `StackUnderflow` if the given stack contains insufficient elements.
-popN :: Int -> Stack -> Either StackError ([Integer], Stack)
+popN :: Int -> Stack -> Either StackError ([Word8], Stack)
 popN n (Stack xs)
   | length xs >= n = let (ys, xs') = splitAt n xs in Right (ys, Stack xs')
   | otherwise = Left StackUnderflow

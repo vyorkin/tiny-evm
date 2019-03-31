@@ -17,9 +17,9 @@ import Prelude hiding (trace)
 import Colog (HasLog, LogAction, Message, cmapM, defaultFieldMap,
               fmtRichMessageDefault, getLogAction, liftLogIO, logTextStdout,
               setLogAction, upgradeMessageAction)
-import Control.Lens (makeLenses, (.~), (^.))
-import TinyEVM.VM.Program (Program (..))
+import Control.Lens (makeLenses, view, (.~))
 import TinyEVM.VM.Code (Code (..))
+import TinyEVM.VM.Program (Program (..))
 import qualified TinyEVM.VM.State as VM
 
 -- | Global environment stores read-only information and
@@ -40,7 +40,7 @@ makeLenses ''Env
 
 instance HasLog (Env m) Message m where
   getLogAction :: Env m -> LogAction m Message
-  getLogAction = (^. logger)
+  getLogAction = view logger
 
   setLogAction :: LogAction m Message -> Env m -> Env m
   setLogAction action env = env & logger .~ action
