@@ -1,5 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
-
 module TinyEVM.VM.Storage
   ( -- * The @Storage@ type
     Storage(..)

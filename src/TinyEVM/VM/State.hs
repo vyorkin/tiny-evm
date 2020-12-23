@@ -19,7 +19,6 @@ import qualified Data.String as String
 import Text.Show (show)
 
 import TinyEVM.VM.Memory (Memory, newMemory)
-import qualified TinyEVM.VM.Memory as Memory
 import TinyEVM.VM.Stack (Stack)
 import qualified TinyEVM.VM.Stack as Stack
 import TinyEVM.VM.Storage (Storage)

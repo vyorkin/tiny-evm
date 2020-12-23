@@ -5,7 +5,6 @@ module VMSpec (spec_vm) where
 import Test.Hspec
 import Test.QuickCheck
 import Test.QuickCheck.Arbitrary (vector)
-import Test.QuickCheck.Monadic (assert, monadicIO, monitor, run)
 
 import Control.Lens ((^.))
 import Prelude hiding (add, state)
@@ -27,11 +26,9 @@ spec_vm :: Spec
 spec_vm = parallel $ do
   describe "TinyEVM.VM" $ do
     it "executes a single pushN instruction" $ property $
-      \(Positive n) -> forAll (vector $ n + 1) $ \xs ->
-        monadicIO $ do
-          state <- run $ runProgram [push (n + 1) xs]
-          monitor (counterexample $ show state)
-          assert $ state ^. stack == Stack.fromList (reverse xs)
+      \(Positive n) -> forAll (vector $ n + 1) $ \xs -> do
+         state <- runProgram [push (n + 1) xs]
+         state ^. stack `shouldBe` Stack.fromList (reverse xs)
     -- it "executes pop instruction" $ property $ $
     --   \(Positive n) -> forAll ()
 

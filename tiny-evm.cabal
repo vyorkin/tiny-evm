@@ -9,7 +9,7 @@ maintainer:          vasiliy.yorkin@gmail.com
 copyright:           2019 (c) Vasiliy Yorkin aka vyorkin
 category:            Language
 build-type:          Simple
-extra-source-files:  CHANGELOG.md
+extra-source-files:  CHANGELOG.md, README.md
 
 common main
   build-depends:       base
@@ -19,6 +19,7 @@ common main
                      , bytestring ^>= 0.10
                      , base16-bytestring ^>= 0.1
                      , errors ^>= 2.3
+                     , unliftio-core ^>= 0.1
                      , exceptions ^>= 0.10
                      , containers ^>= 0.6
                      , unordered-containers >= 0.2

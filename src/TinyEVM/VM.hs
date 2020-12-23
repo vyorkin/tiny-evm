@@ -82,7 +82,7 @@ main :: MonadVM m => m ()
 main = do
   i <- fetch
   exec (i ^. operation) (i ^. operands) >> spend i
-  when (not $ isHalt i) main
+  unless (isHalt i) main
 
 -- | Fetches the current instruction
 -- and updates the program counter (index of the current instruction).
@@ -101,13 +101,13 @@ fetch = do
 -- reduces the amount of gas left accordingly.
 spend :: MonadVM m => Instruction -> m ()
 spend i = do
-  ref <- view vm
-  left <- view gas <$> readIORef ref
+  ref  <- view vm
+  val <- view gas <$> readIORef ref
   let
     cost = fromMaybe 0 (Gas.cost i)
-    remaining = left - cost
+    remaining = val - cost
   when (remaining < 0) $ throwM $
-    InsufficientGasException (i ^. operation) (left, cost)
+    InsufficientGasException (i ^. operation) (val, cost)
   modifyIORef ref $ gas .~ remaining
 
 -- | Executes the operation given its arguments.
@@ -139,9 +139,9 @@ eval Sub (x:y:_)      = x - y
 eval Div (_:0:_)      = 0
 eval Div (x:y:_)      = x `div` y
 eval AddMod (_:_:0:_) = 0
-eval AddMod (x:y:z:_) = (x + y) `rem` z
+eval AddMod (x:y:z:_) = x + y `rem` z
 eval MulMod (_:_:0:_) = 0
-eval MulMod (x:y:z:_) = (x * y) `rem` z
+eval MulMod (x:y:z:_) = x * y `rem` z
 eval Mod (_:0:_)      = 0
 eval Mod (x:y:_)      = x `rem` y
 eval op args          = throw $ UnsupportedOperationException (op, args)

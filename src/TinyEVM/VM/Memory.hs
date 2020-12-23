@@ -37,7 +37,7 @@ data Memory = Memory
 
 -- | Represents an error that
 -- might occur when working with `Memory`.
-data MemoryException = OutOfMemory (Int, Word256)
+newtype MemoryException = OutOfMemory (Int, Word256)
   deriving (Eq, Show)
 
 instance Exception MemoryException
@@ -75,7 +75,7 @@ readWord offset mem = Word256 <$> readBytes (vector mem) offset Word256.bytes
 
 -- | Writes at the given offset.
 write :: Int -> Int -> Memory -> IO Memory
-write offset val mem = writeWord offset (Word256.fromInt val) mem
+write offset val = writeWord offset (Word256.fromInt val)
 
 -- | Writes a `Word256` at the given offset.
 writeWord :: Int -> Word256 -> Memory -> IO Memory
